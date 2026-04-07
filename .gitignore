@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+env/
+.env/
+.venv/
+
+# Environment variables (NEVER push secrets)
+.env
+*.env
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ML models (large files — use Git LFS or store separately)
+ml/models/*.h5
+ml/models/*.pkl
+ml/data/raw/
+ml/data/processed/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# Test coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Static files collected by Django
+staticfiles/
