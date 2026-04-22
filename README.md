@@ -32,4 +32,4 @@ python shap_explain.py
 python predict.py
 
 ## Project Structure
-See folder structure diagram in docs..
+See folder structure diagram in docs
