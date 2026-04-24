@@ -24,7 +24,8 @@ pip install -r requirements/ml.txt
 
 ### 4. Run Day 1 ML pipeline
 cd ml
-python download_data.py
+python download_data.py..
+
 python preprocess.py
 python train_rf.py
 python train_cnn.py
