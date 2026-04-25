@@ -1,7 +1,7 @@
 # AquaSense AI — Water Quality & Health Risk Predictor
 
 AI-powered water quality monitoring for tier 2-3 cities in India.
-Citizens upload a water photo + fill a form → AI predicts contamination type, risk level, and recommended action.
+Citizens upload a water photo + fill a form → AI predicts contamination type, risk level, and recommended action.....
 
 ## Tech Stack
 - Backend: Django + Django REST Framework + PostgreSQL + Celery
