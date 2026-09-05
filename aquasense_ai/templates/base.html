@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}AquaSense AI{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="/" class="navbar-brand"><span class="dot"></span>AquaSense AI</a>
+    <ul class="navbar-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/map/">Risk Map</a></li>
+      <li><a href="/report/">Report Water</a></li>
+      <li id="nav-auth-links"><a href="/login/" class="btn btn-outline btn-sm">Login</a></li>
+      <li id="nav-logout" style="display:none"><button onclick="logout()" class="btn btn-outline btn-sm">Logout</button></li>
+    </ul>
+  </div>
+</nav>
+<main>{% block content %}{% endblock %}</main>
+<footer class="footer">
+  <div class="container">
+    <p>AquaSense AI &mdash; Crowdsourced water quality monitoring for India.</p>
+  </div>
+</footer>
+<script>
+function getToken(){return localStorage.getItem('access_token');}
+function updateNavbar(){
+  const t=getToken();
+  document.getElementById('nav-logout').style.display=t?'list-item':'none';
+  document.getElementById('nav-auth-links').style.display=t?'none':'list-item';
+}
+function logout(){
+  localStorage.clear();
+  window.location.href='/';
+}
+async function authFetch(url,options={}){
+  options.headers={...options.headers,'Authorization':'Bearer '+getToken()};
+  return fetch(url,options);
+}
+updateNavbar();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

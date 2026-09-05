@@ -1,0 +1,82 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard - AquaSense AI{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">{% endblock %}
+{% block content %}
+<div style="padding:60px 24px;">
+  <div class="container">
+    <div style="margin-bottom:40px;">
+      <h1>My dashboard</h1>
+      <p id="welcome-text" class="mt-1">Welcome back</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px;">
+      <div class="stat-card"><div class="stat-icon">📋</div><div><div class="stat-value" id="total-reports">—</div><div class="stat-label">Total reports</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(224,82,82,0.12);">🚨</div><div><div class="stat-value" id="high-reports" style="color:var(--danger);">—</div><div class="stat-label">High risk found</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:rgba(91,141,239,0.12);">🏙️</div><div><div class="stat-value" id="cities-reported" style="color:#5b8def;">—</div><div class="stat-label">Cities covered</div></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <h3>My water reports</h3>
+        <a href="/report/" class="btn btn-primary btn-sm">+ New report</a>
+      </div>
+      <div id="reports-loading" style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+      <div id="reports-list" style="display:none;"></div>
+      <div id="reports-empty" style="display:none;text-align:center;padding:40px;">
+        <div style="font-size:3rem;margin-bottom:16px;">💧</div>
+        <h3>No reports yet</h3>
+        <p class="mt-1">Submit your first water quality report to get started.</p>
+        <a href="/report/" class="btn btn-primary mt-3">Submit a report</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function loadDashboard(){
+  const token=localStorage.getItem('access_token');
+  if(!token){window.location.href='/login/';return;}
+  const user=JSON.parse(localStorage.getItem('user')||'{}');
+  if(user.username) document.getElementById('welcome-text').textContent='Welcome back, '+user.username;
+  try{
+    const res=await authFetch('/api/reports/list/');
+    const reports=await res.json();
+    document.getElementById('reports-loading').style.display='none';
+    if(!reports.length){
+      document.getElementById('reports-empty').style.display='block';
+      document.getElementById('total-reports').textContent='0';
+      document.getElementById('high-reports').textContent='0';
+      document.getElementById('cities-reported').textContent='0';
+      return;
+    }
+    document.getElementById('total-reports').textContent=reports.length;
+    document.getElementById('cities-reported').textContent=new Set(reports.map(r=>r.city)).size;
+    const listEl=document.getElementById('reports-list');
+    listEl.style.display='block';
+    let highCount=0;
+    for(const report of reports){
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);';
+      let badge='<span style="color:var(--muted);font-size:.82rem;">Analysing...</span>';
+      try{
+        const pr=await authFetch('/api/predictions/'+report.id+'/');
+        if(pr.ok){
+          const pred=await pr.json();
+          const colors={High:'var(--danger)',Medium:'var(--warning)',Low:'var(--safe)'};
+          const c=colors[pred.risk_level]||'var(--muted)';
+          badge='<span style="color:'+c+';font-weight:600;">'+pred.risk_level+' - '+pred.contamination_type+'</span>';
+          if(pred.risk_level==='High')highCount++;
+        }
+      }catch(e){}
+      row.innerHTML='<div style="flex:1;"><div style="font-weight:500;">'+report.city+'</div><div style="font-size:.8rem;color:var(--muted);">'+new Date(report.created_at).toLocaleDateString('en-IN')+'</div></div>'+badge+'<a href="/result/?report_id='+report.id+'" class="btn btn-outline btn-sm">View</a>';
+      listEl.appendChild(row);
+    }
+    document.getElementById('high-reports').textContent=highCount;
+  }catch(e){
+    document.getElementById('reports-loading').style.display='none';
+    document.getElementById('reports-empty').style.display='block';
+  }
+}
+loadDashboard();
+</script>
+{% endblock %}

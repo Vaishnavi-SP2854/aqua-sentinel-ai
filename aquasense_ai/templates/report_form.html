@@ -1,0 +1,104 @@
+﻿{% extends 'base.html' %}
+{% block title %}Report Water - AquaSense AI{% endblock %}
+{% block content %}
+<div style="padding:60px 24px;">
+  <div class="container" style="max-width:720px;">
+    <div style="margin-bottom:40px;"><h1>Report a water sample</h1><p class="mt-1">Your report updates the city risk map in real time.</p></div>
+    <div id="alert-box"></div>
+    <div class="card">
+      <div class="form-group">
+        <label class="form-label">Water photo</label>
+        <div id="drop-zone" style="border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;" onclick="document.getElementById('image-input').click()">
+          <div style="font-size:2.5rem;">📷</div>
+          <p style="margin-top:12px;color:var(--muted);font-size:.9rem;">Click or drag a photo of your water source</p>
+          <img id="preview" style="display:none;margin-top:16px;max-width:100%;border-radius:var(--radius);max-height:200px;object-fit:cover;">
+        </div>
+        <input type="file" id="image-input" accept="image/*" style="display:none" onchange="previewImage(this)">
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Latitude</label><input type="number" id="latitude" class="form-control" step="0.000001" placeholder="e.g. 21.1458"></div>
+        <div class="form-group"><label class="form-label">Longitude</label><input type="number" id="longitude" class="form-control" step="0.000001" placeholder="e.g. 79.0882"></div>
+      </div>
+      <button onclick="getLocation()" class="btn btn-outline btn-sm mb-2">📍 Use my current location</button>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">City</label><input type="text" id="city" class="form-control" placeholder="Nagpur"></div>
+        <div class="form-group"><label class="form-label">Address</label><input type="text" id="address" class="form-control" placeholder="Ward / Area"></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Water source</label><select id="water_source" class="form-control"><option value="tap">Tap water</option><option value="borewell">Borewell</option><option value="river">River/Lake</option><option value="tanker">Water tanker</option><option value="well">Open well</option><option value="other">Other</option></select></div>
+        <div class="form-group"><label class="form-label">Water color</label><select id="water_color" class="form-control"><option value="clear">Clear</option><option value="yellow">Yellow/Brown</option><option value="green">Green</option><option value="black">Black</option><option value="white">Milky White</option><option value="other">Other</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Smell</label><select id="water_smell" class="form-control"><option value="none">No smell</option><option value="chlorine">Chlorine/Chemical</option><option value="sulfur">Rotten egg/Sulfur</option><option value="sewage">Sewage</option><option value="musty">Musty/Earthy</option><option value="other">Other</option></select></div>
+        <div class="form-group"><label class="form-label">Turbidity</label><select id="turbidity_score" class="form-control"><option value="1">1 - Crystal clear</option><option value="2">2 - Slightly cloudy</option><option value="3">3 - Cloudy</option><option value="4">4 - Murky</option><option value="5">5 - Very murky</option></select></div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">pH value (optional)</label><input type="number" id="ph_value" class="form-control" step="0.1" min="0" max="14" placeholder="e.g. 7.2"></div>
+        <div class="form-group"><label class="form-label">TDS ppm (optional)</label><input type="number" id="tds_value" class="form-control" placeholder="e.g. 450"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Symptoms in your area</label>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="sym_none" checked onchange="toggleNone(this)"> No symptoms</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="sym_diarrhea" onchange="uncheckNone()"> Diarrhea</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="sym_vomiting" onchange="uncheckNone()"> Vomiting</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="sym_fever" onchange="uncheckNone()"> Fever</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" id="sym_rash" onchange="uncheckNone()"> Skin rash</label>
+        </div>
+      </div>
+      <button onclick="submitReport()" class="btn btn-primary" style="width:100%;" id="submit-btn">Submit report - Analyse water</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function previewImage(input){
+  if(!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{const img=document.getElementById('preview');img.src=e.target.result;img.style.display='block';document.getElementById('drop-zone').style.borderColor='var(--accent)';};
+  reader.readAsDataURL(input.files[0]);
+}
+function getLocation(){
+  if(!navigator.geolocation){alert('Geolocation not supported.');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{document.getElementById('latitude').value=pos.coords.latitude.toFixed(6);document.getElementById('longitude').value=pos.coords.longitude.toFixed(6);});
+}
+function toggleNone(cb){if(cb.checked)['diarrhea','vomiting','fever','rash'].forEach(s=>document.getElementById('sym_'+s).checked=false);}
+function uncheckNone(){document.getElementById('sym_none').checked=false;}
+async function submitReport(){
+  const token=localStorage.getItem('access_token');
+  if(!token){window.location.href='/login/';return;}
+  const alertBox=document.getElementById('alert-box');
+  const btn=document.getElementById('submit-btn');
+  const lat=document.getElementById('latitude').value;
+  const lng=document.getElementById('longitude').value;
+  const city=document.getElementById('city').value.trim();
+  if(!lat||!lng||!city){alertBox.innerHTML='<div class="alert alert-danger">Please provide location and city.</div>';return;}
+  btn.textContent='Submitting...';btn.disabled=true;
+  const formData=new FormData();
+  formData.append('latitude',lat);formData.append('longitude',lng);formData.append('city',city);
+  formData.append('address',document.getElementById('address').value);
+  formData.append('water_source',document.getElementById('water_source').value);
+  formData.append('water_color',document.getElementById('water_color').value);
+  formData.append('water_smell',document.getElementById('water_smell').value);
+  formData.append('turbidity_score',document.getElementById('turbidity_score').value);
+  formData.append('symptoms_none',document.getElementById('sym_none').checked);
+  formData.append('symptoms_diarrhea',document.getElementById('sym_diarrhea').checked);
+  formData.append('symptoms_vomiting',document.getElementById('sym_vomiting').checked);
+  formData.append('symptoms_fever',document.getElementById('sym_fever').checked);
+  formData.append('symptoms_skin_rash',document.getElementById('sym_rash').checked);
+  const ph=document.getElementById('ph_value').value;
+  const tds=document.getElementById('tds_value').value;
+  if(ph)formData.append('ph_value',ph);
+  if(tds)formData.append('tds_value',tds);
+  const imgInput=document.getElementById('image-input');
+  if(imgInput.files[0])formData.append('image',imgInput.files[0]);
+  try{
+    const res=await authFetch('/api/reports/',{method:'POST',body:formData});
+    const data=await res.json();
+    if(res.ok){window.location.href='/result/?report_id='+data.report.id;}
+    else{const errors=Object.values(data).flat().join(' ');alertBox.innerHTML='<div class="alert alert-danger">'+errors+'</div>';btn.textContent='Submit report';btn.disabled=false;}
+  }catch(e){alertBox.innerHTML='<div class="alert alert-danger">Network error.</div>';btn.textContent='Submit report';btn.disabled=false;}
+}
+</script>
+{% endblock %}

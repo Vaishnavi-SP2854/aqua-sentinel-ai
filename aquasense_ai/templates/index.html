@@ -1,0 +1,42 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}AquaSense AI{% endblock %}
+{% block content %}
+<section style="padding:100px 24px 80px;text-align:center;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(61,220,110,0.08) 0%,transparent 70%);">
+  <div class="container">
+    <h1>Know your water.<br><span class="text-accent">Before it is too late.</span></h1>
+    <p style="max-width:560px;margin:24px auto 40px;font-size:1.1rem;">Upload a photo of your water source. Our AI detects contamination type and risk level in seconds.</p>
+    <a href="/report/" class="btn btn-primary btn-lg">Report Water Sample</a>
+    <a href="/map/" class="btn btn-outline btn-lg" style="margin-left:16px;">View Risk Map</a>
+  </div>
+</section>
+<section style="padding:80px 24px;background:var(--bg2);">
+  <div class="container">
+    <h2 class="text-center">How it works</h2>
+    <div class="grid-3" style="margin-top:40px;">
+      <div class="card" style="border-top:3px solid var(--accent);">
+        <div style="font-size:2rem;">📷</div>
+        <h3 style="margin-top:16px;">1. Submit a report</h3>
+        <p class="mt-1">Upload a photo and fill a quick form about color, smell, and symptoms.</p>
+      </div>
+      <div class="card" style="border-top:3px solid var(--warning);">
+        <div style="font-size:2rem;">🧠</div>
+        <h3 style="margin-top:16px;">2. AI analyses</h3>
+        <p class="mt-1">CNN + Random Forest fusion model detects contamination type instantly.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #5b8def;">
+        <div style="font-size:2rem;">🗺️</div>
+        <h3 style="margin-top:16px;">3. Map updates</h3>
+        <p class="mt-1">Your report instantly updates the city risk heatmap for everyone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section style="padding:80px 24px;text-align:center;">
+  <div class="container">
+    <h2>Over 70% of tier 2-3 cities have <span class="text-danger">no water monitoring.</span></h2>
+    <p style="margin-top:16px;max-width:500px;margin-left:auto;margin-right:auto;">You can change that. Every report makes the AI smarter.</p>
+    <a href="/register/" class="btn btn-primary btn-lg" style="margin-top:32px;display:inline-flex;">Join AquaSense - it is free</a>
+  </div>
+</section>
+{% endblock %}

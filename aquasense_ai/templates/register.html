@@ -1,0 +1,60 @@
+﻿{% extends 'base.html' %}
+{% block title %}Register - AquaSense AI{% endblock %}
+{% block content %}
+<div class="flex-center" style="min-height:80vh;padding:40px 24px;">
+  <div style="width:100%;max-width:480px;">
+    <div style="text-align:center;margin-bottom:40px;">
+      <h1 style="font-size:2rem;">Join AquaSense</h1>
+      <p class="mt-1">Help protect your city water</p>
+    </div>
+    <div class="card">
+      <div id="alert-box"></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">First name</label><input type="text" id="first_name" class="form-control" placeholder="Priya"></div>
+        <div class="form-group"><label class="form-label">Last name</label><input type="text" id="last_name" class="form-control" placeholder="Sharma"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Username</label><input type="text" id="username" class="form-control" placeholder="priya_sharma"></div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" id="email" class="form-control" placeholder="you@example.com"></div>
+      <div class="form-group"><label class="form-label">City</label><input type="text" id="city" class="form-control" placeholder="Nagpur"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" id="password" class="form-control" placeholder="Min 8 characters"></div>
+      <div class="form-group"><label class="form-label">Confirm password</label><input type="password" id="password2" class="form-control" placeholder="Repeat password"></div>
+      <button onclick="doRegister()" class="btn btn-primary" style="width:100%;" id="reg-btn">Create account</button>
+      <p class="text-center mt-3" style="font-size:.9rem;">Already have an account? <a href="/login/">Sign in</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function doRegister(){
+  const alertBox=document.getElementById('alert-box');
+  const btn=document.getElementById('reg-btn');
+  const payload={
+    first_name:document.getElementById('first_name').value.trim(),
+    last_name:document.getElementById('last_name').value.trim(),
+    username:document.getElementById('username').value.trim(),
+    email:document.getElementById('email').value.trim(),
+    city:document.getElementById('city').value.trim(),
+    password:document.getElementById('password').value,
+    password2:document.getElementById('password2').value,
+  };
+  if(!payload.email||!payload.password||!payload.username){alertBox.innerHTML='<div class="alert alert-danger">Please fill in all required fields.</div>';return;}
+  if(payload.password!==payload.password2){alertBox.innerHTML='<div class="alert alert-danger">Passwords do not match.</div>';return;}
+  btn.textContent='Creating account...';btn.disabled=true;
+  try{
+    const res=await fetch('/api/auth/register/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(res.ok){
+      localStorage.setItem('access_token',data.tokens.access);
+      localStorage.setItem('refresh_token',data.tokens.refresh);
+      localStorage.setItem('user',JSON.stringify(data.user));
+      window.location.href='/report/';
+    }else{
+      const errors=Object.values(data).flat().join(' ');
+      alertBox.innerHTML='<div class="alert alert-danger">'+errors+'</div>';
+      btn.textContent='Create account';btn.disabled=false;
+    }
+  }catch(e){alertBox.innerHTML='<div class="alert alert-danger">Network error.</div>';btn.textContent='Create account';btn.disabled=false;}
+}
+</script>
+{% endblock %}

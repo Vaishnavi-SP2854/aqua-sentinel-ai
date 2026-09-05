@@ -1,0 +1,32 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+{% block title %}Risk Map - AquaSense AI{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="{% static 'css/map.css' %}">
+{% endblock %}
+{% block content %}
+<div style="padding:60px 24px;">
+  <div class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px;">
+      <div><h1>City risk map</h1><p class="mt-1">Live contamination risk zones updated with every report</p></div>
+      <a href="/report/" class="btn btn-primary btn-sm">+ Add report</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+      <div class="card card-sm" style="text-align:center;"><div style="font-family:var(--font-head);font-size:1.8rem;color:var(--danger);" id="high-count">0</div><div style="font-size:.8rem;color:var(--muted);">High risk zones</div></div>
+      <div class="card card-sm" style="text-align:center;"><div style="font-family:var(--font-head);font-size:1.8rem;color:var(--warning);" id="med-count">0</div><div style="font-size:.8rem;color:var(--muted);">Medium risk zones</div></div>
+      <div class="card card-sm" style="text-align:center;"><div style="font-family:var(--font-head);font-size:1.8rem;color:var(--safe);" id="safe-count">0</div><div style="font-size:.8rem;color:var(--muted);">Safe zones</div></div>
+    </div>
+    <div id="risk-map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#e05252;"></div>High risk</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e8a020;"></div>Medium risk</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3ddc6e;"></div>Safe</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/map.js' %}"></script>
+{% endblock %}
